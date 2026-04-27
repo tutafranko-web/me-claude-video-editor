@@ -1,7 +1,7 @@
-import type { Operation } from '@/types/editor';
+import type { OperationBody } from '@/types/editor';
 
 type ParseResult =
-  | { ok: true; op: Omit<Operation, 'id'> }
+  | { ok: true; op: OperationBody }
   | { ok: false; error: string };
 
 const NUMBER = '(\\d+(?:[.,]\\d+)?)';
@@ -92,7 +92,7 @@ export function parsePrompt(input: string): ParseResult {
   };
 }
 
-export function describeOperation(op: Omit<Operation, 'id'>): string {
+export function describeOperation(op: OperationBody): string {
   switch (op.kind) {
     case 'trim':
       return `Trim ${op.startSec}s → ${op.endSec}s`;

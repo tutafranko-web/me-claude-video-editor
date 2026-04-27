@@ -1,13 +1,14 @@
-export type Operation =
-  | { id: string; kind: 'trim'; startSec: number; endSec: number }
+export type OperationBody =
+  | { kind: 'trim'; startSec: number; endSec: number }
   | {
-      id: string;
       kind: 'filter';
       filter: 'grayscale' | 'brightness' | 'contrast';
       value?: number;
     }
-  | { id: string; kind: 'speed'; multiplier: number }
-  | { id: string; kind: 'crop'; x: number; y: number; w: number; h: number };
+  | { kind: 'speed'; multiplier: number }
+  | { kind: 'crop'; x: number; y: number; w: number; h: number };
+
+export type Operation = OperationBody & { id: string };
 
 export type Message = {
   id: string;

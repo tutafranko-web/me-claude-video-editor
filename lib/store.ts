@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Message, Operation } from '@/types/editor';
+import type { Message, Operation, OperationBody } from '@/types/editor';
 import { uid } from './utils';
 
 interface EditorState {
@@ -13,7 +13,7 @@ interface EditorState {
   error: string | null;
 
   setSource: (file: File) => void;
-  addOperation: (op: Omit<Operation, 'id'>) => void;
+  addOperation: (op: OperationBody) => void;
   removeOperation: (id: string) => void;
   pushMessage: (m: Omit<Message, 'id' | 'ts'>) => void;
   setProcessing: (b: boolean) => void;
