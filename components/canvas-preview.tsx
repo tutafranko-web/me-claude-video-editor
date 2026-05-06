@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause, RotateCcw } from 'lucide-react';
 import { useEditorStore } from '@/lib/store';
 import { buildArgs } from '@/lib/ffmpeg-commands';
 import { formatTime } from '@/lib/utils';
@@ -19,12 +19,14 @@ export function CanvasPreview() {
   const setProgress = useEditorStore((s) => s.setProgress);
   const setPreviewUrl = useEditorStore((s) => s.setPreviewUrl);
   const setError = useEditorStore((s) => s.setError);
+  const setSource = useEditorStore((s) => s.setSource);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const rafRef = useRef<number | null>(null);
   const opsKeyRef = useRef<string>('');
+  const replaceInputRef = useRef<HTMLInputElement>(null);
 
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
@@ -164,23 +166,29 @@ export function CanvasPreview() {
     setTime(v.currentTime);
   };
 
+  const onReplace = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f && f.type.startsWith('video/')) setSource(f);
+  };
+
   return (
-    <div className="w-full max-w-[960px] flex flex-col gap-3">
-      <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-border">
+    <div className="w-full max-w-[920px] flex flex-col gap-4">
+      <div className="relative w-full aspect-video bg-ink rounded-3xl overflow-hidden shadow-card border border-line">
         <video
           ref={videoRef}
           src={previewUrl ?? undefined}
           className="hidden"
           playsInline
-          muted={false}
-          crossOrigin="anonymous"
         />
         <canvas ref={canvasRef} className="w-full h-full object-contain" />
 
         {isProcessing && (
-          <div className="absolute inset-0 bg-bg/70 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
-            <div className="text-[13px] text-neutral-300">Processing…</div>
-            <div className="w-48 h-1 rounded-full bg-neutral-800 overflow-hidden">
+          <div className="absolute inset-0 bg-canvas/85 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
+            <div className="size-10 rounded-full bg-accent/15 flex items-center justify-center animate-pulse-soft">
+              <div className="size-3 rounded-full bg-accent" />
+            </div>
+            <div className="text-[13px] text-ink font-medium">Rendering…</div>
+            <div className="w-56 h-1 rounded-full bg-line overflow-hidden">
               <div
                 className="h-full bg-accent transition-[width] duration-200"
                 style={{ width: `${Math.round(progress * 100)}%` }}
@@ -190,8 +198,9 @@ export function CanvasPreview() {
         )}
 
         {error && (
-          <div className="absolute bottom-3 left-3 right-3 rounded-md bg-red-950/80 border border-red-900 text-red-200 text-[12px] px-3 py-2">
-            {error}
+          <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-surface border border-accent/30 text-ink text-[12.5px] px-4 py-3 shadow-card">
+            <div className="font-medium text-accentDeep mb-0.5">Couldn't render</div>
+            <div className="text-muted">{error}</div>
           </div>
         )}
       </div>
@@ -199,10 +208,10 @@ export function CanvasPreview() {
       <div className="flex items-center gap-3 px-1">
         <button
           onClick={togglePlay}
-          className="size-8 rounded-md bg-neutral-800 hover:bg-neutral-700 flex items-center justify-center transition"
+          className="size-9 rounded-full bg-ink text-canvas hover:bg-ink/85 flex items-center justify-center transition shadow-soft"
           aria-label={playing ? 'Pause' : 'Play'}
         >
-          {playing ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
+          {playing ? <Pause className="size-3.5" /> : <Play className="size-3.5 translate-x-[1px]" />}
         </button>
         <input
           type="range"
@@ -211,11 +220,27 @@ export function CanvasPreview() {
           step={0.01}
           value={time}
           onChange={onSeek}
-          className="flex-1 accent-accent"
+          className="flex-1"
         />
-        <div className="text-[12px] text-neutral-500 tabular-nums w-20 text-right">
+        <div className="text-[12px] text-muted tabular-nums w-24 text-right">
           {formatTime(time)} / {formatTime(duration)}
         </div>
+        <button
+          onClick={() => replaceInputRef.current?.click()}
+          className="ml-2 flex items-center gap-1.5 text-[12px] text-muted hover:text-ink rounded-full px-3 py-1.5 hover:bg-warm transition"
+          aria-label="Replace video"
+          title="Replace video"
+        >
+          <RotateCcw className="size-3" />
+          Replace
+        </button>
+        <input
+          ref={replaceInputRef}
+          type="file"
+          accept="video/*"
+          className="hidden"
+          onChange={onReplace}
+        />
       </div>
     </div>
   );

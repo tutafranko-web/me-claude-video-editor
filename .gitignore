@@ -12,4 +12,5 @@ dist/
 .idea/
 
 next-env.d.ts
+tsconfig.tsbuildinfo
 .vercel
